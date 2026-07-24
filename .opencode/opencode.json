@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "https://opencode.ai",
+  "plugin": [
+    "opencode-antigravity-auth"
+  ],
+  "model": "opencode/deepseek-v4-flash-free",
+  "provider": {
+    "opencode": {
+      "options": {
+        "timeout": 120000
+      }
+    }
+  }
+}

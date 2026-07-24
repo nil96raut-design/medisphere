@@ -1,0 +1,411 @@
+{
+  "info": {
+    "name": "MediSphere HMS API",
+    "description": "Complete API collection for MediSphere Hospital Management System\n\nEnvironments:\n- Local: http://localhost:8085\n- Auth: Bearer token from login\n\nDemo accounts (password: password123):\n- admin@medisphere.com\n- doctor@medisphere.com\n- receptionist@medisphere.com\n- nurse@medisphere.com\n- pharmacist@medisphere.com\n- labtech@medisphere.com\n- patient@medisphere.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{jwt_token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "pm.collectionVariables.set('user_id', jsonData.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"admin@medisphere.com\", \"password\": \"password123\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "Register Patient User",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"fullName\": \"New Patient\", \"email\": \"newpatient@test.com\", \"password\": \"password123\", \"role\": \"PATIENT\", \"allergies\": \"none\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "Hospital Signup",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"hospitalName\": \"New Hospital\", \"licenseNumber\": \"HOSP-NEW-001\", \"adminEmail\": \"admin@newhospital.com\", \"adminFullName\": \"Admin New\", \"adminPassword\": \"password123\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/hospital-signup", "host": ["{{base_url}}"], "path": ["api", "auth", "hospital-signup"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "Register Patient",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstName\": \"John\", \"lastName\": \"Doe\", \"phoneNumber\": \"555-0100\", \"gender\": \"Male\", \"dateOfBirth\": \"1990-01-15\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/patients", "host": ["{{base_url}}"], "path": ["api", "patients"]}
+          }
+        },
+        {
+          "name": "Search Patients",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/patients/search?q=John", "host": ["{{base_url}}"], "path": ["api", "patients", "search"], "query": [{"key": "q", "value": "John"}]}
+          }
+        },
+        {
+          "name": "Log Triage Vitals",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"bloodPressure\": \"120/80\", \"temperatureCelsius\": 37.0, \"pulseRate\": 72, \"weightKg\": 70.5}"
+            },
+            "url": {"raw": "{{base_url}}/api/patients/1/triage", "host": ["{{base_url}}"], "path": ["api", "patients", "1", "triage"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "Book Appointment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\": 1, \"doctorId\": 1, \"appointmentDate\": \"2026-07-25\", \"startTime\": \"09:00\", \"endTime\": \"09:30\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/appointments", "host": ["{{base_url}}"], "path": ["api", "appointments"]}
+          }
+        },
+        {
+          "name": "Update Appointment Status",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\": \"CHECKED_IN\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/appointments/1/status", "host": ["{{base_url}}"], "path": ["api", "appointments", "1", "status"]}
+          }
+        },
+        {
+          "name": "Get Queue for Doctor",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/queue/doctor/1", "host": ["{{base_url}}"], "path": ["api", "queue", "doctor", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Medical Records",
+      "item": [
+        {
+          "name": "Create Medical Record",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\": 1, \"encounterDate\": \"2026-07-24\", \"chiefComplaints\": \"Chest pain\", \"diagnosis\": \"Angina\", \"prescriptions\": [{\"medicineName\": \"Aspirin\", \"dosage\": \"75mg\", \"frequency\": \"Once daily\", \"duration\": \"30 days\"}], \"serviceRequests\": [{\"serviceType\": \"LAB_TEST\", \"serviceDetails\": \"ECG\"}]}"
+            },
+            "url": {"raw": "{{base_url}}/api/medical-records", "host": ["{{base_url}}"], "path": ["api", "medical-records"]}
+          }
+        },
+        {
+          "name": "Get Patient History",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/patients/1/history", "host": ["{{base_url}}"], "path": ["api", "patients", "1", "history"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "IPD / Admissions",
+      "item": [
+        {
+          "name": "Get Available Beds",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/beds/available", "host": ["{{base_url}}"], "path": ["api", "beds", "available"]}
+          }
+        },
+        {
+          "name": "Admit Patient",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\": 1, \"doctorId\": 1, \"bedId\": 1, \"admissionDate\": \"2026-07-24\", \"initialDiagnosis\": \"Pneumonia\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/admissions", "host": ["{{base_url}}"], "path": ["api", "admissions"]}
+          }
+        },
+        {
+          "name": "Add Nursing Log",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"vitalsRecorded\": \"BP 120/80, Temp 37.2\", \"medicineAdministered\": \"Paracetamol 500mg\", \"nursingNotes\": \"Patient resting\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/admissions/1/nursing-log", "host": ["{{base_url}}"], "path": ["api", "admissions", "1", "nursing-log"]}
+          }
+        },
+        {
+          "name": "Discharge Patient",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"dischargeSummary\": \"Patient recovered. Discharged in stable condition.\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/admissions/1/discharge", "host": ["{{base_url}}"], "path": ["api", "admissions", "1", "discharge"]}
+          }
+        },
+        {
+          "name": "Get Active Admissions",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/admissions/active", "host": ["{{base_url}}"], "path": ["api", "admissions", "active"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pharmacy",
+      "item": [
+        {
+          "name": "Add Stock",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"medicineName\": \"Amoxicillin\", \"batchNumber\": \"AMX-123\", \"expiryDate\": \"2027-12-31\", \"quantity\": 100, \"unitPrice\": 5.00}"
+            },
+            "url": {"raw": "{{base_url}}/api/pharmacy/inventory", "host": ["{{base_url}}"], "path": ["api", "pharmacy", "inventory"]}
+          }
+        },
+        {
+          "name": "Get Inventory",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/pharmacy/inventory", "host": ["{{base_url}}"], "path": ["api", "pharmacy", "inventory"]}
+          }
+        },
+        {
+          "name": "Get Low Stock",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/pharmacy/inventory/low-stock", "host": ["{{base_url}}"], "path": ["api", "pharmacy", "inventory", "low-stock"]}
+          }
+        },
+        {
+          "name": "Dispense Medication",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\": 1, \"medicineStockId\": 1, \"quantity\": 14}"
+            },
+            "url": {"raw": "{{base_url}}/api/pharmacy/dispense", "host": ["{{base_url}}"], "path": ["api", "pharmacy", "dispense"]}
+          }
+        },
+        {
+          "name": "Get Pending Prescriptions",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/pharmacy/prescriptions/pending", "host": ["{{base_url}}"], "path": ["api", "pharmacy", "prescriptions", "pending"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lab",
+      "item": [
+        {
+          "name": "List Lab Orders",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/lab/orders?status=ORDERED", "host": ["{{base_url}}"], "path": ["api", "lab", "orders"], "query": [{"key": "status", "value": "ORDERED"}]}
+          }
+        },
+        {
+          "name": "Collect Sample",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"technicianNotes\": \"Sample collected via venipuncture\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/lab/orders/1/sample", "host": ["{{base_url}}"], "path": ["api", "lab", "orders", "1", "sample"]}
+          }
+        },
+        {
+          "name": "Enter Results",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"resultValues\": \"WBC: 12,000 /uL\", \"technicianNotes\": \"Leukocytosis detected\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/lab/orders/1/results", "host": ["{{base_url}}"], "path": ["api", "lab", "orders", "1", "results"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "Calculate Bill",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/billing/calculate/1", "host": ["{{base_url}}"], "path": ["api", "billing", "calculate", "1"]}
+          }
+        },
+        {
+          "name": "Settle Bill",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\": 1, \"paymentMode\": \"CASH\", \"discountAmount\": 10.00, \"insuranceCoveredAmount\": 0, \"idempotencyKey\": \"unique-key-123\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/billing/settle", "host": ["{{base_url}}"], "path": ["api", "billing", "settle"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"fullName\": \"New Staff\", \"email\": \"newstaff@medisphere.com\", \"password\": \"password123\", \"role\": \"NURSE\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/users", "host": ["{{base_url}}"], "path": ["api", "users"]}
+          }
+        },
+        {
+          "name": "Get Users by Role",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/users/by-role?role=DOCTOR", "host": ["{{base_url}}"], "path": ["api", "users", "by-role"], "query": [{"key": "role", "value": "DOCTOR"}]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Take medication\", \"description\": \"Twice daily after meals\", \"assigneeId\": 7, \"priority\": \"HIGH\", \"dueDate\": \"2026-08-01\"}"
+            },
+            "url": {"raw": "{{base_url}}/api/tasks", "host": ["{{base_url}}"], "path": ["api", "tasks"]}
+          }
+        },
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/tasks", "host": ["{{base_url}}"], "path": ["api", "tasks"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Analytics",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/dashboard/analytics", "host": ["{{base_url}}"], "path": ["api", "dashboard", "analytics"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/health", "host": ["{{base_url}}"], "path": ["api", "health"]}
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8085",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

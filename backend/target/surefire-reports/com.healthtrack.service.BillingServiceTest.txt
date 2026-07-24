@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.healthtrack.service.BillingServiceTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.583 s -- in com.healthtrack.service.BillingServiceTest

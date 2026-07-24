@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0D9488;
+  --color-primary-light: #CCFBF1;
+  --color-primary-dark: #0F766E;
+  --color-surface: #FFFFFF;
+  --color-background: #F8FAFC;
+  --color-slate-800: #1E293B;
+  --color-slate-500: #64748B;
+  --color-slate-200: #E2E8F0;
+
+  --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-danger: #EF4444;
+  --color-danger-light: #FEE2E2;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Fraunces", serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-in-from-top-2: slide-in-from-top 0.3s ease-out;
+  --animate-slide-in-from-bottom-4: slide-in-from-bottom 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-from-top {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-from-bottom {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-slate-800 font-sans antialiased m-0 min-h-screen;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-slate-800 mb-2;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2;
+  }
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-dark hover:scale-[1.02] shadow-sm;
+  }
+  .btn-secondary {
+    @apply bg-primary-light text-primary hover:bg-teal-200 hover:scale-[1.02];
+  }
+  .btn-ghost {
+    @apply bg-transparent text-slate-600 border border-slate-200 hover:bg-slate-50 hover:scale-[1.02];
+  }
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-red-600 hover:scale-[1.02];
+  }
+  
+  .input-field {
+    @apply w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-surface text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all;
+  }
+  
+  .form-label {
+    @apply block text-sm font-semibold text-slate-800 mb-1.5;
+  }
+  
+  .status-tag {
+    @apply px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-full;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
