@@ -91,7 +91,7 @@ function DispenseForm({ onClose, onSaved }) {
     setPatientQuery(q)
     if (!q.trim()) { setPatients([]); return }
     try {
-      const res = await api.searchPatients(q)
+      const res = await api.searchPatients({ q })
       setPatients(res)
     } catch { /* ignore */ }
   }

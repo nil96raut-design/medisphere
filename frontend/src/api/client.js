@@ -1,14 +1,32 @@
+import { refreshAccessToken } from '../context/AuthContext'
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 export { BASE_URL }
 
-function getToken() {
-  return localStorage.getItem('ht_token')
+let currentAccessToken = null
+
+export function setAccessToken(token) {
+  currentAccessToken = token
+}
+
+export function clearAccessToken() {
+  currentAccessToken = null
+}
+
+async function getValidToken() {
+  if (!currentAccessToken) {
+    const storedRefresh = localStorage.getItem('ht_refresh_token')
+    if (!storedRefresh) return null
+    const newToken = await refreshAccessToken()
+    return newToken
+  }
+  return currentAccessToken
 }
 
 async function request(path, { method = 'GET', body, auth = true } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   if (auth) {
-    const token = getToken()
+    const token = await getValidToken()
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
 
@@ -20,10 +38,31 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   })
 
-  if (!res.ok) {
-    if (res.status === 401) {
-      window.dispatchEvent(new CustomEvent('ht:unauthorized'))
+  if (res.status === 401 && auth) {
+    const newToken = await refreshAccessToken()
+    if (newToken) {
+      headers['Authorization'] = `Bearer ${newToken}`
+      const retryRes = await fetch(`${BASE_URL}${path}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      })
+      if (retryRes.ok) {
+        if (retryRes.status === 204) return null
+        const retryData = await retryRes.json()
+        return retryData
+      }
     }
+    window.dispatchEvent(new CustomEvent('ht:unauthorized'))
+    let message = `Request failed (${res.status})`
+    try {
+      const data = await res.json()
+      message = data.message || message
+    } catch (_) {}
+    throw new Error(message)
+  }
+
+  if (!res.ok) {
     let message = `Request failed (${res.status})`
     try {
       const data = await res.json()
@@ -46,7 +85,6 @@ export const api = {
   hospitalSignup: (payload) => request('/auth/hospital-signup', { method: 'POST', body: payload, auth: false }),
 
   listTasks: () => request('/tasks'),
-  // page/size/q optional; returns a Spring Page: { content, totalElements, totalPages, number, size }
   searchTasks: ({ q = '', page = 0, size = 20 } = {}) =>
     request(`/tasks/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`),
   createTask: (payload) => request('/tasks', { method: 'POST', body: payload }),
@@ -57,7 +95,8 @@ export const api = {
   createUser: (payload) => request('/users', { method: 'POST', body: payload }),
 
   registerPatient: (payload) => request('/patients', { method: 'POST', body: payload }),
-  searchPatients: (q = '') => request(`/patients/search?q=${encodeURIComponent(q)}`),
+  searchPatients: ({ q = '', page = 0, size = 20 } = {}) =>
+    request(`/patients/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`),
   logTriage: (patientId, payload) => request(`/patients/${patientId}/triage`, { method: 'POST', body: payload }),
 
   chat: (payload) => request('/chatbot/chat', { method: 'POST', body: payload, auth: false }),

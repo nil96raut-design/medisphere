@@ -39,6 +39,17 @@ public class AuthDtos {
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record AuthResponse(
             String token,
+            String refreshToken,
             UserDto user
+    ) {}
+
+    public record RefreshRequest(
+            @NotBlank String refreshToken
+    ) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record RefreshResponse(
+            String token,
+            String refreshToken
     ) {}
 }

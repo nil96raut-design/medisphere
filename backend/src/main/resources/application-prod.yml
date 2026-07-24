@@ -29,7 +29,25 @@ app:
   jwt:
     secret: ${JWT_SECRET}
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,env,flyway
+      base-path: /api/admin
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: medisphere
+    export:
+      prometheus:
+        enabled: true
 
 logging:
   level:
@@ -39,4 +57,4 @@ logging:
     org.hibernate: WARN
     org.flywaydb: INFO
   pattern:
-    console: "%d{yyyy-MM-dd'T'HH:mm:ss'Z'} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'} [%X{correlationId}] [%thread] %-5level %logger{36} - %msg%n"

@@ -34,7 +34,7 @@ export default function FrontDeskDashboard() {
   // Search effect
   useEffect(() => {
     const delay = setTimeout(() => {
-      api.searchPatients(query)
+      api.searchPatients({ q: query })
         .then(setPatients)
         .catch(console.error)
     }, 300)
@@ -57,7 +57,7 @@ export default function FrontDeskDashboard() {
       await api.registerPatient(regForm)
       setRegSuccess('Patient registered successfully')
       setRegForm({ firstName: '', lastName: '', gender: '', dateOfBirth: '', phoneNumber: '', email: '', emergencyContact: '', insuranceProvider: '', policyNumber: '' })
-      api.searchPatients(query).then(setPatients).catch(console.error)
+      api.searchPatients({ q: query }).then(setPatients).catch(console.error)
     } catch (err) {
       setRegError(err.message)
     } finally {

@@ -369,7 +369,7 @@ export default function WardVisualizer() {
   // Auto-search patients when admit form opens
   useEffect(() => {
     if (admitBed && patients.length === 0) {
-      api.searchPatients('').then(setPatients).catch(() => {})
+      api.searchPatients({ q: '', page: 0, size: 100 }).then(setPatients).catch(() => {})
     }
   }, [admitBed, patients.length])
 

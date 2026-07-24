@@ -11,6 +11,7 @@ import com.healthtrack.support.PostgresTestBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,9 +99,9 @@ class PatientServiceTest extends PostgresTestBase {
                 new PatientRegistrationRequest("Bob", "Jones", null, null, "555-0201", null, null, null, null),
                 receptionistPrincipal);
 
-        var results = patientService.searchPatients("Alice", receptionistPrincipal);
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).firstName()).isEqualTo("Alice");
+        var page = patientService.searchPatients("Alice", PageRequest.of(0, 20), receptionistPrincipal);
+        assertThat(page.getContent()).hasSize(1);
+        assertThat(page.getContent().get(0).firstName()).isEqualTo("Alice");
     }
 
     @Test
@@ -112,7 +113,7 @@ class PatientServiceTest extends PostgresTestBase {
                 new PatientRegistrationRequest("Bob", "Jones", null, null, "555-0301", null, null, null, null),
                 receptionistPrincipal);
 
-        assertThat(patientService.searchPatients(null, receptionistPrincipal)).hasSize(2);
-        assertThat(patientService.searchPatients("", receptionistPrincipal)).hasSize(2);
+        assertThat(patientService.searchPatients(null, PageRequest.of(0, 20), receptionistPrincipal).getContent()).hasSize(2);
+        assertThat(patientService.searchPatients("", PageRequest.of(0, 20), receptionistPrincipal).getContent()).hasSize(2);
     }
 }

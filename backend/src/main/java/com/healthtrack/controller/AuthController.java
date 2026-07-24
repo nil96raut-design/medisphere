@@ -28,4 +28,9 @@ public class AuthController {
     public ResponseEntity<AuthResponse> hospitalSignup(@Valid @RequestBody HospitalSignupRequest request) {
         return ResponseEntity.ok(authService.hospitalSignup(request));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
+    }
 }

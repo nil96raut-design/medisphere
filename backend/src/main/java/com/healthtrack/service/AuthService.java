@@ -110,18 +110,38 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
+    public AuthResponse refresh(RefreshRequest request) {
+        if (!jwtService.isRefreshTokenValid(request.refreshToken())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token");
+        }
+
+        String email = jwtService.extractUsername(request.refreshToken());
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+        UserPrincipal principal = new UserPrincipal(user);
+        Long hospitalId = user.getHospital() != null ? user.getHospital().getId() : null;
+
+        JwtService.TokenPair pair = jwtService.generateTokenPair(
+                principal,
+                Map.of("role", user.getRole().name(), "userId", user.getId(), "fullName", user.getFullName(), "hospitalId", hospitalId)
+        );
+
+        return new AuthResponse(pair.accessToken(), pair.refreshToken(), null);
+    }
+
     private AuthResponse buildAuthResponse(User user) {
         Long hospitalId = user.getHospital() != null ? user.getHospital().getId() : null;
-        // Debug: log hospitalId to help diagnose missing tenant ID
         if (hospitalId == null) {
             System.out.println("[AUTH] WARNING: hospitalId is null for user " + user.getId() + " (" + user.getEmail() + "). " +
                     "user.getHospital() = " + user.getHospital());
         }
-        String token = jwtService.generateToken(
-                new UserPrincipal(user),
+        UserPrincipal principal = new UserPrincipal(user);
+        JwtService.TokenPair pair = jwtService.generateTokenPair(
+                principal,
                 Map.of("role", user.getRole().name(), "userId", user.getId(), "fullName", user.getFullName(), "hospitalId", hospitalId)
         );
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getRole(), hospitalId);
-        return new AuthResponse(token, userDto);
+        return new AuthResponse(pair.accessToken(), pair.refreshToken(), userDto);
     }
 }

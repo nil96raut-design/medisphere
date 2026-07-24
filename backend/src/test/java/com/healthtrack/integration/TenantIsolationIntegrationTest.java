@@ -98,14 +98,14 @@ class TenantIsolationIntegrationTest extends PostgresTestBase {
                         .header("Authorization", "Bearer " + tokenA)
                         .param("q", "AlphaPat"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].firstName").value("AlphaPat"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].firstName").value("AlphaPat"));
 
         mockMvc.perform(get("/api/patients/search")
                         .header("Authorization", "Bearer " + tokenA)
                         .param("q", "BetaPat"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.content.length()").value(0));
     }
 
     @Test

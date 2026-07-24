@@ -9,12 +9,12 @@ import com.healthtrack.repository.HospitalRepository;
 import com.healthtrack.repository.PatientRepository;
 import com.healthtrack.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -57,17 +57,18 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public List<PatientResponse> searchPatients(String query, UserPrincipal currentUser) {
+    public Page<PatientResponse> searchPatients(String query, Pageable pageable, UserPrincipal currentUser) {
         requireFrontDeskRole(currentUser);
+        Long hospitalId = currentUser.getHospitalId();
         
-        List<Patient> patients;
+        Page<Patient> patients;
         if (query == null || query.trim().isEmpty()) {
-            patients = patientRepository.findAll();
+            patients = patientRepository.findByHospitalId(hospitalId, pageable);
         } else {
-            patients = patientRepository.searchPatients(query);
+            patients = patientRepository.searchPatients(query, hospitalId, pageable);
         }
         
-        return patients.stream().map(this::mapToResponse).toList();
+        return patients.map(this::mapToResponse);
     }
 
     private void requireFrontDeskRole(UserPrincipal currentUser) {
