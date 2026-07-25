@@ -1,28 +1,21 @@
 services:
   - type: web
     name: medisphere-backend
+    env: docker
     rootDir: backend
-    buildCommand: ./mvnw clean install -DskipTests
-    startCommand: java -jar target/*.jar
-    plan: free
-
+    dockerfilePath: ./backend/Dockerfile
     healthCheckPath: /api/health
-
+    plan: free
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-
       - key: SPRING_DATASOURCE_URL
         sync: false
-
       - key: SPRING_DATASOURCE_USERNAME
         sync: false
-
       - key: SPRING_DATASOURCE_PASSWORD
         sync: false
-
       - key: JWT_SECRET
-        sync: false
-
+        generateValue: ""
       - key: APP_CORS_ALLOWED_ORIGINS
         value: https://medisphere.vercel.app
