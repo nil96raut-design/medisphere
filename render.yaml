@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: medisphere-backend
+    runtime: java
+    repo: https://github.com/nil96raut-design/medisphere
+    rootDir: backend
+    buildCommand: ./mvnw clean install -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: ""
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://medisphere.vercel.app
+    healthCheckPath: /api/health
+    plan: free
