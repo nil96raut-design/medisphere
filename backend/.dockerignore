@@ -1,0 +1,11 @@
+target/
+.git/
+.idea/
+*.md
+*.log
+.env
+.env.local
+.env.production
+node_modules/
+dist/
+logs/
