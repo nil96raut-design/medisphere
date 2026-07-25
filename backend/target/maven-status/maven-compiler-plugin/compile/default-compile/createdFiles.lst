@@ -71,6 +71,7 @@ com\healthtrack\dto\AppointmentDtos$AppointmentRequest.class
 com\healthtrack\entity\ServiceRequest.class
 com\healthtrack\repository\AppointmentRepository.class
 com\healthtrack\controller\DashboardController.class
+com\healthtrack\dto\AuthDtos$RefreshRequest.class
 com\healthtrack\entity\AuditLog$AuditLogBuilder.class
 com\healthtrack\entity\User.class
 com\healthtrack\repository\NursingLogRepository.class
@@ -78,6 +79,7 @@ com\healthtrack\service\DashboardService.class
 com\healthtrack\entity\Patient$PatientBuilder.class
 com\healthtrack\entity\Bed.class
 com\healthtrack\dto\EmrDtos$CreateMedicalRecordRequest.class
+com\healthtrack\security\CorrelationIdFilter.class
 com\healthtrack\controller\BillingController.class
 com\healthtrack\entity\RequestStatus.class
 com\healthtrack\dto\DashboardDtos$RevenueTrend.class
@@ -94,6 +96,7 @@ com\healthtrack\controller\AuthController.class
 com\healthtrack\service\BillingService.class
 com\healthtrack\entity\TaskStatus.class
 com\healthtrack\security\GlobalExceptionHandler.class
+com\healthtrack\config\SecurityConfig$H2ConsoleConfig.class
 com\healthtrack\dto\LabDtos.class
 com\healthtrack\service\IpdService.class
 com\healthtrack\entity\Bed$BedBuilder.class
@@ -112,6 +115,7 @@ com\healthtrack\dto\BillingDtos.class
 com\healthtrack\dto\PharmacyDtos$DispenseRequest.class
 com\healthtrack\dto\PharmacyDtos.class
 com\healthtrack\HealthtrackApplication.class
+com\healthtrack\dto\AuthDtos$RefreshResponse.class
 com\healthtrack\dto\EmrDtos$ServiceRequestEntry.class
 com\healthtrack\dto\TaskDtos$TaskResponse.class
 com\healthtrack\dto\UserDtos.class
@@ -160,6 +164,7 @@ com\healthtrack\dto\EmrDtos$PrescriptionItemRequest.class
 com\healthtrack\entity\LabOrderStatus.class
 com\healthtrack\dto\AuthDtos$LoginRequest.class
 com\healthtrack\dto\ApiError.class
+com\healthtrack\security\JwtService$TokenPair.class
 com\healthtrack\entity\AppointmentStatus.class
 com\healthtrack\repository\BillRepository.class
 com\healthtrack\entity\DispensationRecord.class
