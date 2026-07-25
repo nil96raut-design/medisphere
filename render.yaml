@@ -1,7 +1,6 @@
 services:
   - type: web
     name: medisphere-backend
-    runtime: java
     rootDir: backend
     buildCommand: ./mvnw clean install -DskipTests
     startCommand: java -jar target/*.jar
@@ -23,7 +22,7 @@ services:
         sync: false
 
       - key: JWT_SECRET
-        sync: false   # ✅ better than generateValue
+        sync: false
 
       - key: APP_CORS_ALLOWED_ORIGINS
         value: https://medisphere.vercel.app
