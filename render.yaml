@@ -14,16 +14,16 @@ services:
         value: prod
 
       - key: SPRING_DATASOURCE_URL
-        sync: false
+        value: jdbc:postgresql://db.xniernjaltiffbgeljky.supabase.co:5432/postgres?sslmode=require
 
       - key: SPRING_DATASOURCE_USERNAME
-        sync: false
+        value: postgres
 
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        value: Medisphere@2026Secure!
 
       - key: JWT_SECRET
-        sync: false
+        value: 0vZwEGFKfMYb7y1penGrw7tPRMCXdq2riMGjsB6pvIvx8SUnCtov4/RasbfbQrIB
 
       - key: APP_CORS_ALLOWED_ORIGINS
         value: https://medisphere.vercel.app
