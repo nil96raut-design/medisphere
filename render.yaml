@@ -2,10 +2,14 @@ services:
   - type: web
     name: medisphere-backend
     env: docker
+
     plan: free
 
-    rootDir: backend   
-    dockerfilePath: Dockerfile
+    region: singapore  # (better for India users)
+
+    rootDir: backend   # 🔥 THIS IS THE FIX
+
+    dockerfilePath: backend/Dockerfile
 
     envVars:
       - key: SPRING_PROFILES_ACTIVE
