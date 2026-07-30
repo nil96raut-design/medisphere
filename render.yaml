@@ -1,10 +1,11 @@
 services:
   - type: web
     name: medisphere-backend
-    env: docker   
-
+    env: docker
     plan: free
-    dockerfilePath: backend/Dockerfile
+
+    rootDir: backend   
+    dockerfilePath: Dockerfile
 
     envVars:
       - key: SPRING_PROFILES_ACTIVE
