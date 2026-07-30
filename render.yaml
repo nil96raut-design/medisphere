@@ -9,7 +9,7 @@ services:
 
     rootDir: backend   # 🔥 THIS IS THE FIX
 
-    dockerfilePath: backend/Dockerfile
+    dockerfilePath: Dockerfile
 
     envVars:
       - key: SPRING_PROFILES_ACTIVE
