@@ -1,13 +1,10 @@
 services:
   - type: web
     name: medisphere-backend
-    env: java
-    rootDir: backend
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/*.jar
-    plan: free
+    env: docker   
 
-    healthCheckPath: /api/admin/health
+    plan: free
+    dockerfilePath: backend/Dockerfile
 
     envVars:
       - key: SPRING_PROFILES_ACTIVE
