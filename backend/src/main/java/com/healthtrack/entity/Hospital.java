@@ -47,4 +47,7 @@ public class Hospital {
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime trialEndDate;
+
+    @Column(unique = true)
+    private String invitationCode;
 }

@@ -39,15 +39,15 @@ class AuthServiceTest extends PostgresTestBase {
     void setUp() {
         jdbcTemplate.update("""
             INSERT INTO hospital (id, name, license_number, contact_email,
-                                  created_at, subscription_tier, subscription_status)
+                                  created_at, subscription_tier, subscription_status, invitation_code)
             VALUES (1, 'Default Hospital', 'DEFAULT-HOSP',
-                    'default@hospital.com', NOW(), 'MONTHLY', 'ACTIVE')
+                    'default@hospital.com', NOW(), 'MONTHLY', 'ACTIVE', 'TEST-CODE')
             """);
     }
 
     @Test
     void registerThenLogin_succeeds() {
-        RegisterRequest register = new RegisterRequest("Ada Lovelace", "ada@example.com", "s3cret-pw", Role.PATIENT, null, null);
+        RegisterRequest register = new RegisterRequest("Ada Lovelace", "ada@example.com", "s3cret-pw", Role.PATIENT, null, null, "TEST-CODE");
         AuthResponse registered = authService.register(register);
 
         assertThat(registered.token()).isNotBlank();
@@ -59,10 +59,10 @@ class AuthServiceTest extends PostgresTestBase {
 
     @Test
     void register_withDuplicateEmail_isRejected() {
-        RegisterRequest first = new RegisterRequest("Grace Hopper", "grace@example.com", "s3cret-pw", Role.DOCTOR, null, null);
+        RegisterRequest first = new RegisterRequest("Grace Hopper", "grace@example.com", "s3cret-pw", Role.DOCTOR, null, null, "TEST-CODE");
         authService.register(first);
 
-        RegisterRequest duplicate = new RegisterRequest("Grace H.", "grace@example.com", "other-pw", Role.DOCTOR, null, null);
+        RegisterRequest duplicate = new RegisterRequest("Grace H.", "grace@example.com", "other-pw", Role.DOCTOR, null, null, "TEST-CODE");
 
         assertThatThrownBy(() -> authService.register(duplicate))
                 .isInstanceOf(ResponseStatusException.class)
@@ -72,7 +72,7 @@ class AuthServiceTest extends PostgresTestBase {
 
     @Test
     void login_withWrongPassword_isRejected() {
-        authService.register(new RegisterRequest("Alan Turing", "alan@example.com", "correct-pw", Role.PATIENT, null, null));
+        authService.register(new RegisterRequest("Alan Turing", "alan@example.com", "correct-pw", Role.PATIENT, null, null, "TEST-CODE"));
 
         assertThatThrownBy(() -> authService.login(new LoginRequest("alan@example.com", "wrong-pw")))
                 .isInstanceOf(Exception.class); // AuthenticationManager throws before our own 401 mapping
@@ -87,7 +87,7 @@ class AuthServiceTest extends PostgresTestBase {
     @Test
     void register_persistsAllergies() {
         RegisterRequest register = new RegisterRequest(
-                "Nina Patient", "nina@example.com", "s3cret-pw", Role.PATIENT, null, "penicillin, latex");
+                "Nina Patient", "nina@example.com", "s3cret-pw", Role.PATIENT, null, "penicillin, latex", "TEST-CODE");
 
         authService.register(register);
 

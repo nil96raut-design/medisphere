@@ -15,3 +15,9 @@ spring:
   sql:
     init:
       mode: never
+
+app:
+  jwt:
+    secret: test-secret-that-is-at-least-256-bits-long-for-hs256-algorithm-test-key
+    expiration-ms: 86400000
+    refresh-expiration-ms: 604800000

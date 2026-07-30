@@ -34,8 +34,8 @@ export default function FrontDeskDashboard() {
   useEffect(() => {
     const delay = setTimeout(() => {
       api.searchPatients({ q: query })
-        .then(setPatients)
-        .catch(() => {})
+        .then(res => setPatients(Array.isArray(res) ? res : (res?.content || res?.items || [])))
+        .catch(() => setPatients([]))
     }, 300)
     return () => clearTimeout(delay)
   }, [query])
@@ -170,7 +170,7 @@ export default function FrontDeskDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {patients.map(p => (
+                {(Array.isArray(patients) ? patients : (patients?.content || [])).map(p => (
                   <Card key={p.id} padding="p-0" className="flex flex-col group overflow-hidden border-slate-200 hover:border-primary/50">
                     <div className="p-4 flex-1">
                       <div className="flex justify-between items-start mb-2">

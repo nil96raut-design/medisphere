@@ -12,9 +12,10 @@ public record ApiError(
         int status,
         String error,
         String message,
-        String path
+        String path,
+        String correlationId
 ) {
-    public ApiError(HttpStatusCode status, String message, String path) {
-        this(OffsetDateTime.now(ZoneOffset.UTC), status.value(), status.toString(), message, path);
+    public ApiError(HttpStatusCode status, String message, String path, String correlationId) {
+        this(OffsetDateTime.now(ZoneOffset.UTC), status.value(), status.toString(), message, path, correlationId);
     }
 }

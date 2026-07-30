@@ -15,7 +15,9 @@ public class DashboardDtos {
             long lowStockItems,
             long activeAdmissions,
             List<RevenueTrend> weeklyRevenue,
-            List<AppointmentTrend> todaySchedule
+            List<AppointmentTrend> todaySchedule,
+            boolean degraded,
+            java.time.OffsetDateTime lastUpdated
     ) {}
 
     public record RevenueTrend(

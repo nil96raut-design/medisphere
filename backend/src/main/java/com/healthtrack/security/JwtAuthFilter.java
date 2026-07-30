@@ -14,8 +14,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import com.healthtrack.repository.TokenBlocklistRepository;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor
@@ -25,25 +29,80 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AppUserDetailsService userDetailsService;
+    private final StringRedisTemplate redisTemplate;
+    private final MeterRegistry meterRegistry;
+    private final TokenBlocklistRepository tokenBlocklistRepository;
+    
+    private final ConcurrentHashMap<String, Boolean> localBlocklist = new ConcurrentHashMap<>();
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                      @NonNull HttpServletResponse response,
                                      @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-        log.debug("JwtAuthFilter processing request: {} {}, authHeader present: {}", request.getMethod(), request.getRequestURI(), authHeader != null);
+        String jwt = null;
+        
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("ht_access_token".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.debug("No Bearer token found, skipping JWT auth");
+        final String authHeader = request.getHeader("Authorization");
+        if (jwt == null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+        }
+        
+        log.debug("JwtAuthFilter processing request: {} {}, token present: {}", request.getMethod(), request.getRequestURI(), jwt != null);
+
+        if (jwt == null) {
+            log.debug("No token found in cookies or header, skipping JWT auth");
             filterChain.doFilter(request, response);
             return;
         }
-
-        final String jwt = authHeader.substring(7);
         log.debug("JWT token length: {}", jwt.length());
 
         try {
+            boolean isBlocked = localBlocklist.getOrDefault(jwt, false);
+            if (!isBlocked) {
+                try {
+                    isBlocked = Boolean.TRUE.equals(redisTemplate.hasKey("blocklist:" + jwt));
+                } catch (RedisConnectionFailureException e) {
+                    log.warn("Redis unavailable during JWT blocklist check. Failing OPEN. Error: {}", e.getMessage());
+                    meterRegistry.counter("auth.redis.failures.count").increment();
+                } catch (Exception e) {
+                    log.warn("Error checking Redis blocklist. Failing OPEN. Error: {}", e.getMessage());
+                }
+            }
+
+            if (!isBlocked) {
+                try {
+                    isBlocked = tokenBlocklistRepository.existsByToken(jwt);
+                    if (isBlocked) {
+                        try {
+                            long expirationTime = jwtService.getExpiration(jwt).getTime();
+                            long ttl = expirationTime - System.currentTimeMillis();
+                            if (ttl > 0) {
+                                redisTemplate.opsForValue().set("blocklist:" + jwt, "true", ttl, java.util.concurrent.TimeUnit.MILLISECONDS);
+                            }
+                        } catch (Exception redisEx) {
+                            log.warn("Failed to backfill Redis blocklist cache: {}", redisEx.getMessage());
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Error checking DB blocklist. Failing OPEN. Error: {}", e.getMessage());
+                }
+            }
+
+            if (isBlocked) {
+                log.warn("Token is blocklisted");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
             final String userEmail = jwtService.extractUsername(jwt);
             log.debug("Extracted username from token: {}", userEmail);
 

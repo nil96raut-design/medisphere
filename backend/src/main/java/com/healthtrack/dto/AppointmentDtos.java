@@ -22,7 +22,8 @@ public class AppointmentDtos {
             @NotNull Long doctorId,
             @NotNull LocalDate appointmentDate,
             @NotNull LocalTime startTime,
-            @NotNull LocalTime endTime
+            @NotNull LocalTime endTime,
+            Boolean emergencyOverride
     ) {}
 
     public record AppointmentResponse(

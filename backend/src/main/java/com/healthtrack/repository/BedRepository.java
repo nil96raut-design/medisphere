@@ -19,4 +19,6 @@ public interface BedRepository extends JpaRepository<Bed, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select b from Bed b where b.id = :id")
     Optional<Bed> findByIdLocked(@Param("id") Long id);
+
+    List<Bed> findByHospitalIdOrderByWardNameAscBedNumberAsc(Long hospitalId);
 }

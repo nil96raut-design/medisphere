@@ -28,8 +28,9 @@ public class PatientDtos {
             String phoneNumber,
             String email,
             String emergencyContact,
-            String insuranceProvider,
-            String policyNumber
+            String policyNumber,
+            boolean degraded,
+            java.time.OffsetDateTime lastUpdated
     ) {}
 
     public record TriageLogRequest(

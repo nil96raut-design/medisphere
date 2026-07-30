@@ -62,4 +62,18 @@ public class Bill {
     @Builder.Default
     @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime createdAt = DateUtils.nowUtc();
+
+    @Column(columnDefinition = "TEXT")
+    private String refundReason;
+
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime refundedAt;
+
+    @Builder.Default
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal refundedAmount = BigDecimal.ZERO;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime updatedAt = DateUtils.nowUtc();
 }

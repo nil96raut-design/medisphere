@@ -48,5 +48,8 @@ public class Appointment {
     @Column(nullable = false)
     private AppointmentStatus status;
 
+    @Builder.Default
+    private Integer priority = 0;
+
     private Integer tokenNumber;
 }

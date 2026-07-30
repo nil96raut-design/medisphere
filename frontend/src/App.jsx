@@ -6,17 +6,17 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import HospitalRegister from './pages/HospitalRegister'
-import Dashboard from './pages/Dashboard'
-import DoctorDashboard from './pages/DoctorDashboard'
-import FrontDeskDashboard from './pages/FrontDeskDashboard'
-import IPDDashboard from './pages/IPDDashboard'
-import LabDashboard from './pages/LabDashboard'
-import PharmacyDashboard from './pages/PharmacyDashboard'
-import BillingDashboard from './pages/BillingDashboard'
-import PatientDashboard from './pages/PatientDashboard'
 import Unauthorized from './pages/Unauthorized'
 import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute'
 
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const DoctorDashboard = lazy(() => import('./pages/DoctorDashboard'))
+const FrontDeskDashboard = lazy(() => import('./pages/FrontDeskDashboard'))
+const IPDDashboard = lazy(() => import('./pages/IPDDashboard'))
+const LabDashboard = lazy(() => import('./pages/LabDashboard'))
+const PharmacyDashboard = lazy(() => import('./pages/PharmacyDashboard'))
+const BillingDashboard = lazy(() => import('./pages/BillingDashboard'))
+const PatientDashboard = lazy(() => import('./pages/PatientDashboard'))
 const UserManagement = lazy(() => import('./pages/UserManagement'))
 const QueueBoard = lazy(() => import('./components/QueueBoard'))
 

@@ -65,4 +65,8 @@ public class User {
     @JoinColumn(name = "hospital_id", nullable = false)
     @JsonIgnore
     private Hospital hospital;
+
+    @Builder.Default
+    @Column(name = "refresh_token_version")
+    private Integer refreshTokenVersion = 0;
 }

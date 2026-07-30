@@ -148,10 +148,10 @@ export default function BillingDashboard() {
           </div>
           
           <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
-            {patients.length === 0 && query && (
+            {(!Array.isArray(patients) || patients.length === 0) && query && (
               <p className="text-center text-sm text-slate-500 mt-4">No patients found.</p>
             )}
-            {patients.map((p) => (
+            {(Array.isArray(patients) ? patients : (patients?.content || [])).map((p) => (
               <div 
                 key={p.id} 
                 className={`p-3 rounded-xl cursor-pointer transition-colors flex items-center gap-3 mb-1 ${

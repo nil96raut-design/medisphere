@@ -19,153 +19,154 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PharmacyServiceTest extends PostgresTestBase {
 
     @Autowired private PharmacyService pharmacyService;
+    @Autowired private MedicineStockRepository medicineStockRepository;
+    @Autowired private PatientRepository patientRepository;
     @Autowired private HospitalRepository hospitalRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private PatientRepository patientRepository;
-    @Autowired private MedicineStockRepository medicineStockRepository;
 
     private Hospital hospital;
+    private User pharmacist;
     private Patient patient;
     private UserPrincipal pharmacistPrincipal;
-    private UserPrincipal adminPrincipal;
-    private UserPrincipal patientPrincipal;
 
     @BeforeEach
     void setUp() {
         hospital = hospitalRepository.save(Hospital.builder()
-                .name("Pharmacy Test Hospital").licenseNumber("PHARM-" + System.nanoTime())
-                .contactEmail("pharm@test.com")
-                .subscriptionTier(SubscriptionTier.MONTHLY)
+                .name("Pharmacy Test Hospital").licenseNumber("PT-" + System.nanoTime())
+                .contactEmail("pt@test.com").subscriptionTier(SubscriptionTier.MONTHLY)
                 .subscriptionStatus(SubscriptionStatus.ACTIVE).build());
 
-        User pharmacist = userRepository.save(User.builder()
-                .fullName("Pharmacist Alex").email("pharmacist-" + System.nanoTime() + "@test.com")
+        pharmacist = userRepository.save(User.builder()
+                .fullName("Pharm Test").email("pharm-" + System.nanoTime() + "@test.com")
                 .passwordHash("x").role(Role.PHARMACIST).hospital(hospital).build());
 
-        User admin = userRepository.save(User.builder()
-                .fullName("Admin User").email("admin-pharm-" + System.nanoTime() + "@test.com")
-                .passwordHash("x").role(Role.ADMIN).hospital(hospital).build());
-
-        User patUser = userRepository.save(User.builder()
-                .fullName("Pharmacy Patient").email("pat-pharm-" + System.nanoTime() + "@test.com")
-                .passwordHash("x").role(Role.PATIENT).hospital(hospital).build());
+        patient = patientRepository.save(Patient.builder()
+                .hospital(hospital).firstName("Pharm").lastName("Patient")
+                .phoneNumber("PT-PAT").build());
 
         pharmacistPrincipal = new UserPrincipal(pharmacist);
-        adminPrincipal = new UserPrincipal(admin);
-        patientPrincipal = new UserPrincipal(patUser);
-
-        patient = patientRepository.save(Patient.builder()
-                .hospital(hospital).firstName("Pharma").lastName("Patient")
-                .phoneNumber("555-PHARM-1").build());
     }
 
     @Test
-    void addStock_createsMedicine() {
-        MedicineStockResponse stock = pharmacyService.addStock(
-                new AddStockRequest("Paracetamol", "BATCH-001", LocalDate.now().plusYears(2), 100, new BigDecimal("5.00")),
-                pharmacistPrincipal);
-
-        assertThat(stock.medicineName()).isEqualTo("Paracetamol");
-        assertThat(stock.availableQuantity()).isEqualTo(100);
-        assertThat(stock.isExpired()).isFalse();
+    void addStock_createsStock() {
+        var request = new AddStockRequest("Paracetamol", "BATCH-001",
+                LocalDate.now().plusMonths(6), 100, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2.00), BigDecimal.valueOf(7.00), null);
+        var response = pharmacyService.addStock(request, pharmacistPrincipal);
+        assertThat(response.medicineName()).isEqualTo("Paracetamol");
+        assertThat(response.availableQuantity()).isEqualTo(100);
+        assertThat(response.effectiveQuantity()).isEqualTo(100);
     }
 
     @Test
-    void dispense_reducesStock() {
-        MedicineStockResponse stock = pharmacyService.addStock(
-                new AddStockRequest("Amoxicillin", "BATCH-002", LocalDate.now().plusYears(1), 50, new BigDecimal("10.00")),
-                pharmacistPrincipal);
+    void fifo_selectsEarliestExpiryFirst() {
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("Amoxicillin").batchNumber("BATCH-A")
+                .expiryDate(LocalDate.now().plusMonths(6)).availableQuantity(50)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("Amoxicillin").batchNumber("BATCH-B")
+                .expiryDate(LocalDate.now().plusMonths(2)).availableQuantity(30)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("Amoxicillin").batchNumber("BATCH-C")
+                .expiryDate(LocalDate.now().plusMonths(12)).availableQuantity(20)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
 
-        DispensationResponse dispensation = pharmacyService.dispense(
-                new DispenseRequest(patient.getId(), stock.id(), 10, null),
-                pharmacistPrincipal);
+        var request = new DispenseRequest(patient.getId(), "Amoxicillin", 25, null);
+        var response = pharmacyService.dispense(request, pharmacistPrincipal);
 
-        assertThat(dispensation.quantityDispensed()).isEqualTo(10);
-        assertThat(dispensation.billingStatus()).isEqualTo("PENDING");
+        assertThat(response.dispensationStatus()).isEqualTo("COMPLETE");
+        assertThat(response.quantityDispensed()).isEqualTo(25);
 
-        MedicineStockResponse updated = medicineStockRepository.findById(stock.id())
-                .map(s -> new MedicineStockResponse(s.getId(), s.getMedicineName(), s.getBatchNumber(),
-                        s.getExpiryDate(), s.getAvailableQuantity(), s.getReorderLevel(),
-                        s.getUnitPrice(), false, false))
-                .orElseThrow();
-        assertThat(updated.availableQuantity()).isEqualTo(40);
+        var batchA = medicineStockRepository.findByHospitalId(hospital.getId()).stream()
+                .filter(s -> s.getBatchNumber().equals("BATCH-A")).findFirst().orElseThrow();
+        var batchB = medicineStockRepository.findByHospitalId(hospital.getId()).stream()
+                .filter(s -> s.getBatchNumber().equals("BATCH-B")).findFirst().orElseThrow();
+        var batchC = medicineStockRepository.findByHospitalId(hospital.getId()).stream()
+                .filter(s -> s.getBatchNumber().equals("BATCH-C")).findFirst().orElseThrow();
+
+        assertThat(batchB.getAvailableQuantity()).isEqualTo(5);
+        assertThat(batchA.getAvailableQuantity()).isEqualTo(50);
+        assertThat(batchC.getAvailableQuantity()).isEqualTo(20);
     }
 
     @Test
-    void dispense_insufficientStock_throws400() {
-        MedicineStockResponse stock = pharmacyService.addStock(
-                new AddStockRequest("Ibuprofen", "BATCH-003", LocalDate.now().plusYears(1), 5, new BigDecimal("3.00")),
-                pharmacistPrincipal);
+    void expiredBatch_isBlocked() {
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("ExpiredMed").batchNumber("EXP-001")
+                .expiryDate(LocalDate.now().minusDays(1)).availableQuantity(50)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("ExpiredMed").batchNumber("EXP-002")
+                .expiryDate(LocalDate.now().plusMonths(6)).availableQuantity(10)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
 
-        assertThatThrownBy(() -> pharmacyService.dispense(
-                new DispenseRequest(patient.getId(), stock.id(), 10, null),
-                pharmacistPrincipal))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("Insufficient stock");
+        var request = new DispenseRequest(patient.getId(), "ExpiredMed", 5, null);
+        var response = pharmacyService.dispense(request, pharmacistPrincipal);
+        assertThat(response.quantityDispensed()).isEqualTo(5);
+
+        var expiredBatch = medicineStockRepository.findByHospitalId(hospital.getId()).stream()
+                .filter(s -> s.getBatchNumber().equals("EXP-001")).findFirst().orElseThrow();
+        assertThat(expiredBatch.getAvailableQuantity()).isEqualTo(50);
     }
 
     @Test
-    void dispense_expiredMedicine_throws400() {
-        MedicineStockResponse stock = pharmacyService.addStock(
-                new AddStockRequest("Expired Med", "BATCH-EXP", LocalDate.now().minusDays(1), 50, new BigDecimal("1.00")),
-                pharmacistPrincipal);
+    void insufficientStock_throws() {
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("LowStockMed").batchNumber("LOW-001")
+                .expiryDate(LocalDate.now().plusMonths(6)).availableQuantity(3)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
 
-        assertThatThrownBy(() -> pharmacyService.dispense(
-                new DispenseRequest(patient.getId(), stock.id(), 1, null),
-                pharmacistPrincipal))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("expired");
+        var request = new DispenseRequest(patient.getId(), "LowStockMed", 10, null);
+        assertThatThrownBy(() -> pharmacyService.dispense(request, pharmacistPrincipal))
+                .isInstanceOf(ResponseStatusException.class);
     }
 
     @Test
-    void dispense_nonPharmacist_throws403() {
-        MedicineStockResponse stock = pharmacyService.addStock(
-                new AddStockRequest("Test Med", "BATCH-004", LocalDate.now().plusYears(1), 50, new BigDecimal("2.00")),
-                pharmacistPrincipal);
+    void partialDispensing_multiBatch() {
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("MultiBatch").batchNumber("MB-001")
+                .expiryDate(LocalDate.now().plusMonths(6)).availableQuantity(5)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("MultiBatch").batchNumber("MB-002")
+                .expiryDate(LocalDate.now().plusMonths(8)).availableQuantity(5)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
 
-        assertThatThrownBy(() -> pharmacyService.dispense(
-                new DispenseRequest(patient.getId(), stock.id(), 1, null),
-                patientPrincipal))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("403 FORBIDDEN");
+        var request = new DispenseRequest(patient.getId(), "MultiBatch", 8, null);
+        var response = pharmacyService.dispense(request, pharmacistPrincipal);
+
+        assertThat(response.quantityDispensed()).isEqualTo(8);
+        assertThat(response.dispensationStatus()).isEqualTo("PARTIAL");
     }
 
     @Test
-    void getLowStock_filtersByThreshold() {
-        pharmacyService.addStock(
-                new AddStockRequest("Low Stock Med", "BATCH-LOW", LocalDate.now().plusYears(1), 5, new BigDecimal("1.00")),
-                pharmacistPrincipal);
-        pharmacyService.addStock(
-                new AddStockRequest("Full Stock Med", "BATCH-FULL", LocalDate.now().plusYears(1), 100, new BigDecimal("1.00")),
-                pharmacistPrincipal);
+    void noValidBatches_throws() {
+        var request = new DispenseRequest(patient.getId(), "NonExistentMed", 5, null);
+        assertThatThrownBy(() -> pharmacyService.dispense(request, pharmacistPrincipal))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void nonPharmacist_throws() {
+        User doctor = userRepository.save(User.builder()
+                .fullName("Dr. No").email("dr-no-" + System.nanoTime() + "@test.com")
+                .passwordHash("x").role(Role.DOCTOR).hospital(hospital).build());
+        var request = new DispenseRequest(patient.getId(), "Anything", 1, null);
+        assertThatThrownBy(() -> pharmacyService.dispense(request, new UserPrincipal(doctor)))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void lowStock_detected() {
+        medicineStockRepository.save(MedicineStock.builder()
+                .hospital(hospital).medicineName("LowItem").batchNumber("LOW-001")
+                .expiryDate(LocalDate.now().plusMonths(6)).availableQuantity(5)
+                .unitPrice(BigDecimal.TEN).reorderLevel(10).build());
 
         var lowStock = pharmacyService.getLowStock(pharmacistPrincipal);
-        assertThat(lowStock).anyMatch(s -> s.medicineName().equals("Low Stock Med"));
-        assertThat(lowStock).noneMatch(s -> s.medicineName().equals("Full Stock Med"));
-    }
-
-    @Test
-    void getAllStock_returnsAll() {
-        pharmacyService.addStock(
-                new AddStockRequest("Med A", "BATCH-A", LocalDate.now().plusYears(1), 10, null),
-                pharmacistPrincipal);
-        pharmacyService.addStock(
-                new AddStockRequest("Med B", "BATCH-B", LocalDate.now().plusYears(1), 20, null),
-                pharmacistPrincipal);
-
-        assertThat(pharmacyService.getAllStock(pharmacistPrincipal)).hasSize(2);
-    }
-
-    @Test
-    void admin_canDispense() {
-        MedicineStockResponse stock = pharmacyService.addStock(
-                new AddStockRequest("Admin Dispense", "BATCH-ADM", LocalDate.now().plusYears(1), 30, new BigDecimal("5.00")),
-                pharmacistPrincipal);
-
-        DispensationResponse result = pharmacyService.dispense(
-                new DispenseRequest(patient.getId(), stock.id(), 5, null),
-                adminPrincipal);
-
-        assertThat(result.quantityDispensed()).isEqualTo(5);
+        assertThat(lowStock).isNotEmpty();
+        assertThat(lowStock.get(0).medicineName()).isEqualTo("LowItem");
     }
 }

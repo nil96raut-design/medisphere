@@ -55,14 +55,14 @@ class BillingIdempotencyConcurrencyTest extends PostgresTestBase {
                 Future<BillResponse> f1 = executor.submit(() -> {
                     barrier.await();
                     return billingService.settle(
-                            new SettleRequest(ctx.patientId, BigDecimal.ZERO, BigDecimal.ZERO, "CASH", idempotencyKey),
+                            new SettleRequest(ctx.patientId, BigDecimal.ZERO, BigDecimal.ZERO, null, "CASH", null, idempotencyKey),
                             ctx.staffPrincipal);
                 });
 
                 Future<BillResponse> f2 = executor.submit(() -> {
                     barrier.await();
                     return billingService.settle(
-                            new SettleRequest(ctx.patientId, BigDecimal.ZERO, BigDecimal.ZERO, "CASH", idempotencyKey),
+                            new SettleRequest(ctx.patientId, BigDecimal.ZERO, BigDecimal.ZERO, null, "CASH", null, idempotencyKey),
                             ctx.staffPrincipal);
                 });
 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
 import { api, setAccessToken, clearAccessToken } from '../api/client'
 
-const AuthContext = createContext(null)
+export const AuthContext = createContext(null)
 
 let refreshPromise = null
 
@@ -33,9 +33,11 @@ export async function refreshAccessToken() {
 
   refreshPromise = (async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/auth/refresh`, {
+      const baseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api'
+      const res = await fetch(`${baseUrl}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ refreshToken }),
       })
       if (!res.ok) throw new Error('Refresh failed')
@@ -142,8 +144,4 @@ export function AuthProvider({ children }) {
   )
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
-  return ctx
-}
+export { useAuth } from './useAuth'

@@ -3,8 +3,6 @@ package com.healthtrack.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -45,6 +43,10 @@ public class DispensationRecord {
     @Column(nullable = false)
     private Integer quantityDispensed;
 
+    @Column(name = "remaining_quantity")
+    @Builder.Default
+    private Integer remainingQuantity = 0;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal unitPrice;
 
@@ -55,6 +57,14 @@ public class DispensationRecord {
     @Builder.Default
     @Column(nullable = false)
     private BillingStatus billingStatus = BillingStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dispensation_status", length = 20)
+    @Builder.Default
+    private DispensationStatus dispensationStatus = DispensationStatus.COMPLETE;
+
+    @Column(name = "batch_id")
+    private Long batchId;
 
     @Builder.Default
     @Column(nullable = false)

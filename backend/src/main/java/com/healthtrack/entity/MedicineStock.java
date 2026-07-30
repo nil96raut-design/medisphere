@@ -3,11 +3,10 @@ package com.healthtrack.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "medicine_stock")
@@ -41,10 +40,42 @@ public class MedicineStock {
     private Integer availableQuantity = 0;
 
     @Builder.Default
+    @Column(name = "quantity_reserved", nullable = false)
+    private Integer quantityReserved = 0;
+
+    @Builder.Default
     @Column(nullable = false)
     private Integer reorderLevel = 10;
 
     @Column(nullable = false, precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal unitPrice = BigDecimal.ZERO;
+
+    @Column(name = "purchase_price", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal purchasePrice = BigDecimal.ZERO;
+
+    @Column(name = "selling_price", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal sellingPrice = BigDecimal.ZERO;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
+
+    @Builder.Default
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    public Integer getEffectiveQuantity() {
+        return availableQuantity - quantityReserved;
+    }
+
+    public boolean isExpired() {
+        return expiryDate != null && expiryDate.isBefore(LocalDate.now());
+    }
+
+    public boolean isLowStock() {
+        return getEffectiveQuantity() <= reorderLevel;
+    }
 }

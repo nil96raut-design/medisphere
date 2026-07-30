@@ -12,7 +12,9 @@ public class BillingDtos {
             String description,
             BigDecimal amount,
             Integer quantity,
-            BigDecimal total
+            BigDecimal total,
+            String sourceType,
+            Long sourceId
     ) {}
 
     public record CalculateResponse(
@@ -29,8 +31,17 @@ public class BillingDtos {
             @NotNull Long patientId,
             BigDecimal discountAmount,
             BigDecimal insuranceCoveredAmount,
+            BigDecimal amountPaid,
             @NotNull String paymentMode,
+            String transactionReference,
             String idempotencyKey
+    ) {}
+
+    public record PaymentRequest(
+            @NotNull BigDecimal amount,
+            @NotNull String paymentMode,
+            @NotNull String transactionReference,
+            String remarks
     ) {}
 
     public record BillResponse(
@@ -43,6 +54,22 @@ public class BillingDtos {
             BigDecimal netPayable,
             String paymentStatus,
             String paymentMode,
-            OffsetDateTime createdAt
+            OffsetDateTime createdAt,
+            String refundReason,
+            OffsetDateTime refundedAt,
+            BigDecimal refundedAmount
+    ) {}
+
+    public record RefundRequest(
+            @NotNull String reason,
+            BigDecimal amount
+    ) {}
+
+    public record RefundResponse(
+            Long id,
+            String paymentStatus,
+            String refundReason,
+            OffsetDateTime refundedAt,
+            BigDecimal refundedAmount
     ) {}
 }

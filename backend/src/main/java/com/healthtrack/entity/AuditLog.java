@@ -2,7 +2,7 @@ package com.healthtrack.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.Filter;
 
 import java.time.OffsetDateTime;
 
@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Filter(name = "tenantFilter", condition = "hospital_id = :hospitalId")
 public class AuditLog {
 
     @Id
@@ -38,4 +39,6 @@ public class AuditLog {
 
     @Column(nullable = false)
     private OffsetDateTime timestamp;
+
+    private String correlationId;
 }

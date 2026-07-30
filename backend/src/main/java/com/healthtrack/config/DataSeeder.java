@@ -192,7 +192,7 @@ public class DataSeeder implements CommandLineRunner {
         List<LabTestOrder> labOrders = labTestOrderRepository.saveAll(List.of(
                 LabTestOrder.builder().hospital(hospital).patient(alice).testName("Complete Blood Count (CBC)").requestedBy(doctor).status(LabOrderStatus.ORDERED).price(new BigDecimal("75.00")).build(),
                 LabTestOrder.builder().hospital(hospital).patient(david).testName("Lipid Panel").requestedBy(doctor).status(LabOrderStatus.SAMPLE_COLLECTED).technicianNotes("Sample drawn, awaiting analysis").price(new BigDecimal("120.00")).build(),
-                LabTestOrder.builder().hospital(hospital).patient(emily).testName("Thyroid Panel (TSH, T3, T4)").requestedBy(doctor).status(LabOrderStatus.RESULT_READY).resultValues("TSH: 2.5 mIU/L (0.4-4.0)\nT3: 1.2 nmol/L (1.0-2.8)\nT4: 85 nmol/L (60-140)\nAll values within normal range.").completedAt(java.time.LocalDateTime.now().minusHours(3)).price(new BigDecimal("150.00")).build()
+                LabTestOrder.builder().hospital(hospital).patient(emily).testName("Thyroid Panel (TSH, T3, T4)").requestedBy(doctor).status(LabOrderStatus.RESULT_ENTERED).resultValues("TSH: 2.5 mIU/L (0.4-4.0)\nT3: 1.2 nmol/L (1.0-2.8)\nT4: 85 nmol/L (60-140)\nAll values within normal range.").completedAt(java.time.LocalDateTime.now().minusHours(3)).price(new BigDecimal("150.00")).build()
         ));
 
         // ============================================================

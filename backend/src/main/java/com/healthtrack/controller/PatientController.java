@@ -28,6 +28,14 @@ public class PatientController {
         return ResponseEntity.ok(patientService.registerPatient(request, currentUser));
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('RECEPTIONIST', 'ADMIN', 'DOCTOR', 'NURSE')")
+    public ResponseEntity<PatientResponse> getPatient(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(patientService.getPatient(id, currentUser));
+    }
+
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('RECEPTIONIST', 'ADMIN', 'DOCTOR', 'NURSE')")
     public ResponseEntity<Page<PatientResponse>> searchPatients(
@@ -35,5 +43,14 @@ public class PatientController {
             Pageable pageable,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(patientService.searchPatients(q, pageable, currentUser));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('RECEPTIONIST', 'ADMIN', 'DOCTOR')")
+    public ResponseEntity<PatientResponse> updatePatient(
+            @PathVariable Long id,
+            @Valid @RequestBody PatientRegistrationRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(patientService.updatePatient(id, request, currentUser));
     }
 }

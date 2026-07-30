@@ -30,9 +30,42 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET}   # ✅ FIXED (VERY IMPORTANT)
+    secret: ${JWT_SECRET:dev-secret-key-that-is-at-least-256-bits-long-for-hs256}
     expiration-ms: 86400000
     refresh-expiration-ms: 604800000
 
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,caches,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  bulkhead:
+    instances:
+      database:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 500ms
+      external:
+        maxConcurrentCalls: 10
+        maxWaitDuration: 1s
+  thread-pool-bulkhead:
+    instances:
+      database:
+        maxThreadPoolSize: 20
+        coreThreadPoolSize: 10
+        queueCapacity: 50
+      external:
+        maxThreadPoolSize: 10
+        coreThreadPoolSize: 5
+        queueCapacity: 20
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

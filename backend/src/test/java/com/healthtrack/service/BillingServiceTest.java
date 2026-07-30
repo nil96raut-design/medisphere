@@ -109,7 +109,7 @@ class BillingServiceTest extends PostgresTestBase {
                 .status(AppointmentStatus.COMPLETED).build());
 
         BillResponse bill = billingService.settle(
-                new SettleRequest(patient.getId(), BigDecimal.ZERO, BigDecimal.ZERO, "CASH", UUID.randomUUID().toString()),
+                new SettleRequest(patient.getId(), BigDecimal.ZERO, BigDecimal.ZERO, null, "CASH", null, UUID.randomUUID().toString()),
                 staffPrincipal);
 
         assertThat(bill.patientName()).contains("Bill");
@@ -129,11 +129,11 @@ class BillingServiceTest extends PostgresTestBase {
         String idempotencyKey = UUID.randomUUID().toString();
 
         billingService.settle(
-                new SettleRequest(patient.getId(), BigDecimal.ZERO, BigDecimal.ZERO, "CASH", idempotencyKey),
+                new SettleRequest(patient.getId(), BigDecimal.ZERO, BigDecimal.ZERO, null, "CASH", null, idempotencyKey),
                 staffPrincipal);
 
         assertThatThrownBy(() -> billingService.settle(
-                new SettleRequest(patient.getId(), BigDecimal.ZERO, BigDecimal.ZERO, "CASH", idempotencyKey),
+                new SettleRequest(patient.getId(), BigDecimal.ZERO, BigDecimal.ZERO, null, "CASH", null, idempotencyKey),
                 staffPrincipal))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("409 CONFLICT");
@@ -149,7 +149,7 @@ class BillingServiceTest extends PostgresTestBase {
                 .status(AppointmentStatus.COMPLETED).build());
 
         BillResponse bill = billingService.settle(
-                new SettleRequest(patient.getId(), new BigDecimal("50"), BigDecimal.ZERO, "CARD", null),
+                new SettleRequest(patient.getId(), new BigDecimal("50"), BigDecimal.ZERO, null, "CARD", null, null),
                 staffPrincipal);
 
         assertThat(bill.discountAmount()).isEqualByComparingTo(new BigDecimal("50"));

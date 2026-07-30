@@ -1,6 +1,9 @@
 package com.healthtrack.service;
 
 import com.healthtrack.entity.LabTestOrder;
+import com.healthtrack.entity.LabOrderStatus;
+import com.healthtrack.entity.Role;
+import com.healthtrack.entity.User;
 import com.healthtrack.repository.LabTestOrderRepository;
 import com.healthtrack.security.TenantValidator;
 import com.healthtrack.security.UserPrincipal;
@@ -29,6 +32,12 @@ public class LabReportService {
         LabTestOrder order = labTestOrderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lab order not found"));
         tenantValidator.validateHospitalAccess(order.getHospital().getId(), currentUser.getHospitalId());
+
+        User user = currentUser.getUser();
+        if (user.getRole() == Role.DOCTOR && order.getStatus() != LabOrderStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Lab results must be approved before viewing the report");
+        }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document(PageSize.A4);

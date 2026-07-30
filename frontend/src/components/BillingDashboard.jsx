@@ -122,7 +122,7 @@ export default function BillingDashboard() {
       {error && <p className="form-error">{error}</p>}
       <input type="search" className="search-input" placeholder="Search patient…" value={query} onChange={(e) => handleSearch(e.target.value)} />
       <div className="patient-list">
-        {patients.map((p) => (
+        {(Array.isArray(patients) ? patients : (patients?.content || [])).map((p) => (
           <div key={p.id} className={`patient-item ${selectedPatient?.id === p.id ? 'is-selected' : ''}`} onClick={() => handleSelect(p)}>
             <strong>{p.firstName} {p.lastName}</strong>
             <small className="muted">{p.phoneNumber}</small>

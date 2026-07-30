@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     List<User> findByRole(Role role);
     List<User> findByPrimaryDoctorId(Long doctorId);
+    List<User> findByHospitalId(Long hospitalId);
+
+    User findFirstByHospitalIdAndRole(Long hospitalId, Role role);
 }

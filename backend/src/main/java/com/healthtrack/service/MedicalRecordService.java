@@ -7,6 +7,8 @@ import com.healthtrack.repository.PatientRepository;
 import com.healthtrack.security.TenantValidator;
 import com.healthtrack.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +20,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MedicalRecordService {
 
+    private static final Logger log = LoggerFactory.getLogger(MedicalRecordService.class);
+
     private final MedicalRecordRepository medicalRecordRepository;
     private final PatientRepository patientRepository;
     private final com.healthtrack.repository.LabTestOrderRepository labTestOrderRepository;
     private final TenantValidator tenantValidator;
+    private final MedicationSchedulingService medicationSchedulingService;
 
     @Transactional
     public MedicalRecordResponse createRecord(CreateMedicalRecordRequest request, UserPrincipal currentUser) {
@@ -93,6 +98,15 @@ public class MedicalRecordService {
         }
 
         record = medicalRecordRepository.save(record);
+
+        for (PrescriptionItem item : record.getPrescriptions()) {
+            try {
+                medicationSchedulingService.generateSchedules(item.getId());
+            } catch (Exception e) {
+                log.warn("Failed to generate medication schedules for item {}", item.getId(), e);
+            }
+        }
+
         return mapToResponse(record);
     }
 

@@ -121,8 +121,8 @@ class RbacIntegrationTest extends PostgresTestBase {
                 .availableQuantity(100).unitPrice(new BigDecimal("10")).build()).getId();
 
         String payload = """
-            {"patientId":%d,"medicineStockId":%d,"quantity":1}
-            """.formatted(patientId, stockId);
+            {"patientId":%d,"medicineName":"Test Med","quantity":1}
+            """.formatted(patientId);
 
         mockMvc.perform(post("/api/pharmacy/dispense")
                         .header("Authorization", "Bearer " + pharmacistToken)

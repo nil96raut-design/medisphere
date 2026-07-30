@@ -154,14 +154,14 @@ export default function FrontDeskDashboard() {
       </div>
 
       <div className="task-grid">
-        {patients.map(p => (
+        {(Array.isArray(patients) ? patients : (patients?.content || [])).map(p => (
           <div key={p.id} className="task-card" style={{ cursor: 'pointer' }} onClick={() => toggleApptPatient(p)}>
             <h3>{p.firstName} {p.lastName}</h3>
             <p className="muted">Phone: {p.phoneNumber}</p>
           </div>
         ))}
       </div>
-      {patients.length === 0 && <p className="muted" style={{ textAlign: 'center', marginTop: '2rem' }}>No patients found.</p>}
+      {(!Array.isArray(patients) || patients.length === 0) && <p className="muted" style={{ textAlign: 'center', marginTop: '2rem' }}>No patients found.</p>}
 
       {/* ---------- Appointment Booking ---------- */}
       <h2 style={{ marginTop: '2.5rem' }}>Book Appointment</h2>

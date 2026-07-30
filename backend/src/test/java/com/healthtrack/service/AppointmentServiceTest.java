@@ -70,7 +70,7 @@ class AppointmentServiceTest extends PostgresTestBase {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
         AppointmentResponse response = appointmentService.bookAppointment(
-                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(9, 0), LocalTime.of(9, 30)),
+                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(9, 0), LocalTime.of(9, 30), false),
                 staffPrincipal);
 
         assertThat(response.patientId()).isEqualTo(patient1.getId());
@@ -85,11 +85,11 @@ class AppointmentServiceTest extends PostgresTestBase {
         LocalTime end = LocalTime.of(10, 30);
 
         appointmentService.bookAppointment(
-                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, start, end),
+                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, start, end, false),
                 staffPrincipal);
 
         assertThatThrownBy(() -> appointmentService.bookAppointment(
-                new AppointmentRequest(patient2.getId(), doctorId, tomorrow, start, end),
+                new AppointmentRequest(patient2.getId(), doctorId, tomorrow, start, end, false),
                 staffPrincipal))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("409 CONFLICT");
@@ -99,7 +99,7 @@ class AppointmentServiceTest extends PostgresTestBase {
     void updateStatus_checkIn_assignsToken() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         AppointmentResponse appointment = appointmentService.bookAppointment(
-                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(11, 0), LocalTime.of(11, 30)),
+                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(11, 0), LocalTime.of(11, 30), false),
                 staffPrincipal);
 
         AppointmentResponse checkedIn = appointmentService.updateStatus(
@@ -113,7 +113,7 @@ class AppointmentServiceTest extends PostgresTestBase {
     void updateStatus_completingScheduled_isAllowed() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         AppointmentResponse appointment = appointmentService.bookAppointment(
-                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(14, 0), LocalTime.of(14, 30)),
+                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(14, 0), LocalTime.of(14, 30), false),
                 staffPrincipal);
 
         AppointmentResponse updated = appointmentService.updateStatus(
@@ -126,7 +126,7 @@ class AppointmentServiceTest extends PostgresTestBase {
     void updateStatus_checkingInCompleted_throws400() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         AppointmentResponse appointment = appointmentService.bookAppointment(
-                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(14, 0), LocalTime.of(14, 30)),
+                new AppointmentRequest(patient1.getId(), doctorId, tomorrow, LocalTime.of(14, 0), LocalTime.of(14, 30), false),
                 staffPrincipal);
 
         appointmentService.updateStatus(
@@ -135,17 +135,17 @@ class AppointmentServiceTest extends PostgresTestBase {
         assertThatThrownBy(() -> appointmentService.updateStatus(
                 appointment.id(), new StatusUpdateRequest(AppointmentStatus.CHECKED_IN), staffPrincipal))
                 .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("Only SCHEDULED");
+                .hasMessageContaining("Cannot transition from COMPLETED to CHECKED_IN");
     }
 
     @Test
     void getQueue_returnsAllNonCancelledAppointments() {
         LocalDate today = LocalDate.now();
         AppointmentResponse a1 = appointmentService.bookAppointment(
-                new AppointmentRequest(patient1.getId(), doctorId, today, LocalTime.of(9, 0), LocalTime.of(9, 30)),
+                new AppointmentRequest(patient1.getId(), doctorId, today, LocalTime.of(9, 0), LocalTime.of(9, 30), false),
                 staffPrincipal);
         appointmentService.bookAppointment(
-                new AppointmentRequest(patient2.getId(), doctorId, today, LocalTime.of(9, 30), LocalTime.of(10, 0)),
+                new AppointmentRequest(patient2.getId(), doctorId, today, LocalTime.of(9, 30), LocalTime.of(10, 0), false),
                 staffPrincipal);
 
         appointmentService.updateStatus(a1.id(), new StatusUpdateRequest(AppointmentStatus.CHECKED_IN), staffPrincipal);

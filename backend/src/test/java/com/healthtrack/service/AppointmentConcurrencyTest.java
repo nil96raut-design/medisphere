@@ -67,14 +67,14 @@ class AppointmentConcurrencyTest extends PostgresTestBase {
                 Future<AppointmentResponse> f1 = executor.submit(() -> {
                     barrier.await();
                     return appointmentService.bookAppointment(
-                            new AppointmentRequest(ctx.patient1Id, ctx.doctor1Id, date, start, end),
+                            new AppointmentRequest(ctx.patient1Id, ctx.doctor1Id, date, start, end, false),
                             ctx.staffPrincipal);
                 });
 
                 Future<AppointmentResponse> f2 = executor.submit(() -> {
                     barrier.await();
                     return appointmentService.bookAppointment(
-                            new AppointmentRequest(ctx.patient2Id, ctx.doctor1Id, date, start, end),
+                            new AppointmentRequest(ctx.patient2Id, ctx.doctor1Id, date, start, end, false),
                             ctx.staffPrincipal);
                 });
 
@@ -142,14 +142,14 @@ class AppointmentConcurrencyTest extends PostgresTestBase {
         Future<AppointmentResponse> f1 = executor.submit(() -> {
             barrier.await();
             return appointmentService.bookAppointment(
-                    new AppointmentRequest(ctx.patient1Id, ctx.doctor1Id, date, start, end),
+                    new AppointmentRequest(ctx.patient1Id, ctx.doctor1Id, date, start, end, false),
                     ctx.staffPrincipal);
         });
 
         Future<AppointmentResponse> f2 = executor.submit(() -> {
             barrier.await();
             return appointmentService.bookAppointment(
-                    new AppointmentRequest(ctx.patient2Id, ctx.doctor2Id, date, start, end),
+                    new AppointmentRequest(ctx.patient2Id, ctx.doctor2Id, date, start, end, false),
                     ctx.staffPrincipal);
         });
 

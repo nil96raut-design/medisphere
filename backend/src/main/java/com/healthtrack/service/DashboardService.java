@@ -67,7 +67,8 @@ public class DashboardService {
                 totalPatients, todayAppointments, todayRevenue,
                 activeBeds, totalBeds, pendingLabOrders,
                 lowStockItems, activeAdmissions,
-                weeklyRevenue, todaySchedule
+                weeklyRevenue, todaySchedule,
+                false, java.time.OffsetDateTime.now()
         );
     }
 }

@@ -23,6 +23,8 @@ public class IpdService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
     private final TenantValidator tenantValidator;
+    private final BedCleaningService bedCleaningService;
+    private final DischargeIntegrityValidator dischargeIntegrityValidator;
 
     @Transactional(readOnly = true)
     public List<BedResponse> getAvailableBeds(UserPrincipal currentUser) {
@@ -122,11 +124,16 @@ public class IpdService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Patient is already discharged");
         }
 
+        dischargeIntegrityValidator.validateDischarge(admission);
+
         admission.setStatus(AdmissionStatus.DISCHARGED);
         admission.setDischargeDate(java.time.LocalDate.now());
         admission.setDischargeSummary(request.dischargeSummary());
         admission.getBed().setIsOccupied(false);
         admission = admissionRepository.save(admission);
+
+        bedCleaningService.autoRequestCleaningOnDischarge(admission.getBed().getId(), currentUser);
+
         return mapToResponse(admission);
     }
 

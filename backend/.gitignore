@@ -1,0 +1,35 @@
+# Target & Build artifacts
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# Maven wrapper
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# IDE specific files
+.idea/
+*.iml
+.vscode/
+*.ipr
+*.iws
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.env
+
+# Application logs
+*.log
+logs/
+
+# Database files & local dumps
+*.db
+*.sqlite

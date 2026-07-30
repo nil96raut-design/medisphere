@@ -1,6 +1,6 @@
 import { refreshAccessToken } from '../context/AuthContext'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api'
 export { BASE_URL }
 
 let currentAccessToken = null
@@ -30,11 +30,10 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
 
-  console.debug(`[API] ${method} ${path}`, body || '')
-
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
+    credentials: 'include',
     body: body ? JSON.stringify(body) : undefined,
   })
 
@@ -45,6 +44,7 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
       const retryRes = await fetch(`${BASE_URL}${path}`, {
         method,
         headers,
+        credentials: 'include',
         body: body ? JSON.stringify(body) : undefined,
       })
       if (retryRes.ok) {
@@ -68,13 +68,11 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
       const data = await res.json()
       message = data.message || message
     } catch (_) {}
-    console.error(`[API] FAILED ${method} ${path}: ${message}`)
     throw new Error(message)
   }
 
   if (res.status === 204) return null
   const data = await res.json()
-  console.debug(`[API] ${method} ${path} ->`, data)
   return data
 }
 
@@ -95,8 +93,10 @@ export const api = {
   createUser: (payload) => request('/users', { method: 'POST', body: payload }),
 
   registerPatient: (payload) => request('/patients', { method: 'POST', body: payload }),
-  searchPatients: ({ q = '', page = 0, size = 20 } = {}) =>
-    request(`/patients/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`),
+  searchPatients: async ({ q = '', page = 0, size = 20 } = {}) => {
+    const res = await request(`/patients/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`)
+    return Array.isArray(res) ? res : (res?.content || res?.items || [])
+  },
   logTriage: (patientId, payload) => request(`/patients/${patientId}/triage`, { method: 'POST', body: payload }),
 
   chat: (payload) => request('/chatbot/chat', { method: 'POST', body: payload, auth: false }),

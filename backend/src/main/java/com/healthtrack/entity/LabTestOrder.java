@@ -8,6 +8,9 @@ import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "lab_test_order")
@@ -58,6 +61,45 @@ public class LabTestOrder {
     private BigDecimal price = BigDecimal.ZERO;
 
     private LocalDateTime completedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private User approvedBy;
+
+    private OffsetDateTime approvedAt;
+
+    private LocalDateTime sampleCollectedAt;
+
+    private OffsetDateTime resultEnteredAt;
+
+    private LocalDateTime processingStartedAt;
+
+    private LocalDateTime processingCompletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "result_entered_by")
+    private User resultEnteredBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "retest_of")
+    private LabTestOrder retestOf;
+
+    @Column(columnDefinition = "TEXT")
+    private String correctionReason;
+
+    private Integer turnaroundMinutes;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean criticalFlag = false;
+
+    private String sampleBarcode;
+
+    private String sampleStorageLocation;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "labOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SampleTracking> sampleTrackings = new ArrayList<>();
 
     @Builder.Default
     @Column(nullable = false)

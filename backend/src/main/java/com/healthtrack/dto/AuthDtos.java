@@ -13,7 +13,8 @@ public class AuthDtos {
             @NotBlank String password,
             Role role,
             Long primaryDoctorId,
-            String allergies
+            String allergies,
+            String invitationCode
     ) {}
 
     public record LoginRequest(
@@ -26,7 +27,8 @@ public class AuthDtos {
             @NotBlank String licenseNumber,
             @Email @NotBlank String adminEmail,
             @NotBlank String adminFullName,
-            @NotBlank String adminPassword
+            @NotBlank String adminPassword,
+            String invitationCode
     ) {}
 
     public record UserDto(
